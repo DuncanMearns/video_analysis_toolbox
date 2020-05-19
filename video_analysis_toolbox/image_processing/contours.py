@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 
-def find_contours(image, threshold, n=-1):
+def find_contours(image, threshold, n=-1, invert=False):
     """Finds all the contours in an image after binarizing with the threshold.
 
     Parameters
@@ -14,6 +14,8 @@ def find_contours(image, threshold, n=-1):
         Threshold applied to images to find contours.
     n : int (default = -1)
         Number of contours to be extracted (-1 for all contours identified with a given threshold).
+    invert : bool (default = False)
+        Whether to invert the binarization.
 
     Returns
     -------
@@ -22,7 +24,10 @@ def find_contours(image, threshold, n=-1):
         after applying the threshold.
     """
     # apply threshold
-    ret, threshed = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY)
+    if invert:
+        ret, threshed = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY_INV)
+    else:
+        ret, threshed = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY)
     # find contours
     img, contours, hierarchy = cv2.findContours(threshed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # sort in descending size order
@@ -95,14 +100,17 @@ class ContourDetector:
         Threshold applied to images to find contours.
     n : int (default = -1)
         Number of contours to be extracted (-1 for all contours identified with a given threshold).
+    invert : bool (default = False)
+        Whether to invert the binarization.
     """
 
-    def __init__(self, threshold: int, n=-1):
+    def __init__(self, threshold: int, n=-1, invert=False):
         self.threshold = threshold
         self.n = n
+        self.invert = invert
 
     def find_contours(self, image):
-        return find_contours(image, self.threshold, self.n)
+        return find_contours(image, self.threshold, self.n, self.invert)
 
     contour_info = staticmethod(contour_info)
     mask = staticmethod(mask)
