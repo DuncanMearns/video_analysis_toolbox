@@ -102,7 +102,7 @@ class ContourDetector:
         self.n = n
 
     def find_contours(self, image):
-        find_contours(image, self.threshold, self.n)
+        return find_contours(image, self.threshold, self.n)
 
     contour_info = staticmethod(contour_info)
     mask = staticmethod(mask)
