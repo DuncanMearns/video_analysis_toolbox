@@ -237,7 +237,7 @@ class VideoArray(VideoMixin):
 
     @classmethod
     def from_file(cls, path, **kwargs):
-        cap = cv2.VideoCapture(path)
+        cap = cv2.VideoCapture(str(path))
         n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
