@@ -11,33 +11,33 @@ class FrameErrorWarning(UserWarning):
         super().__init__(*args)
 
 
-class VideoPlayer(KeyboardInteraction):
-
-    def __init__(self, name, frame_time=1):
-        super().__init__()
-        self.name = name
-        self.frame_time = frame_time
-        cv2.namedWindow(self.name)
-
-    def __call__(self, *args, **kwargs):
-        for arg in args:
-            cv2.imshow(self.name, arg)
-            self.wait(self.frame_time)
-            if self.valid():
-                self.close()
-                return False
-        return True
-
-    def close(self):
-        cv2.destroyWindow(self.name)
-
-
-class VideoMixin(KeyboardInteraction):
+class Video(KeyboardInteraction):
 
     def __init__(self, name='', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.frame_number = 0
         self.name = name
+
+    @classmethod
+    def open(cls, path, convert_to_grayscale=True, import_frames=False, *args, **kwargs):
+        path = Path(path)
+        if not path.exists():
+            raise ValueError(f"Path {path} does not exist.")
+        if import_frames or (path.suffix == '.npy'):
+            if path.suffix == '.npy':  # import numpy array
+                video = _VideoArray.from_numpy(path, **kwargs)
+            else:  # import frames from video
+                video = _VideoArray.from_video(path, **kwargs)
+        elif path.suffix == '.avi':
+            try:  # open avi file (xvid or other compression)
+                video = _VideoFile(path, convert_to_grayscale, *args, **kwargs)
+                if video.fourcc == 'H264':
+                    raise ValueError()
+            except ValueError:  # open h264 compressed file
+                video = _VideoFileH264(path, convert_to_grayscale, *args, **kwargs)
+        else:
+            raise ValueError(f"{path} is not a valid file type.")
+        return video
 
     @property
     def frame_count(self):
@@ -128,12 +128,12 @@ class VideoMixin(KeyboardInteraction):
         else:
             frames = self._return_frames(*args)
         if as_object:
-            return VideoArray(frames, self.frame_rate, **kwargs)
+            return _VideoArray(frames, self.frame_rate, **kwargs)
         else:
             return np.array(frames)
 
 
-class VideoFile(VideoMixin):
+class _VideoFile(Video):
 
     def __init__(self, path, convert_to_grayscale=True, *args, **kwargs):
         self.path = Path(path)
@@ -190,7 +190,7 @@ class VideoFile(VideoMixin):
             return np.zeros(self.shape, dtype='uint8')
 
 
-class VideoH264(VideoFile):
+class _VideoFileH264(_VideoFile):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -228,7 +228,7 @@ class VideoH264(VideoFile):
             return frame
 
 
-class VideoArray(VideoMixin):
+class _VideoArray(Video):
 
     def __init__(self, frames, frame_rate=24.0, **kwargs):
         self.frames = frames
@@ -236,7 +236,7 @@ class VideoArray(VideoMixin):
         super().__init__(**kwargs)
 
     @classmethod
-    def from_file(cls, path, **kwargs):
+    def from_video(cls, path, **kwargs):
         cap = cv2.VideoCapture(str(path))
         n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -249,6 +249,11 @@ class VideoArray(VideoMixin):
                 frame = frame[..., 0]
                 frames[i] = frame
         return cls(frames, fps, **kwargs)
+
+    @classmethod
+    def from_numpy(cls, path, **kwargs):
+        frames = np.load(path).astype('uint8')
+        return cls(frames, **kwargs)
 
     @property
     def frame_count(self):

@@ -1,6 +1,6 @@
 from .userapp import UserApplicationWindow
 from ..widgets import DoubleThresholdWidget
-from ...video import VideoFile
+from ...video import Video
 
 
 class SetThresholdsApp(UserApplicationWindow):
@@ -16,7 +16,7 @@ class SetThresholdsApp(UserApplicationWindow):
 
     def __init__(self, videos, tracker, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.videos = [VideoFile(video) for video in videos]
+        self.videos = [Video.open(video) for video in videos]
         self.tracker = tracker
         # Set name
         self.setWindowTitle('Set thresholds')
