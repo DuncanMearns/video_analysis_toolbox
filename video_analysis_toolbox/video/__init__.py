@@ -204,6 +204,7 @@ class _VideoFileH264(_VideoFile):
             ret, frame = self.cap.read()
             self.error_frames[self.frame_number] = self.cvt_frame(frame)
             self.frame_number += 1
+        self.set_frame(0)
 
     def set_frame(self, f):
         if f >= self.n_error_frames:
