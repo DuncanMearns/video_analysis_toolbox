@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
 
 
-class UserApplicationWindow(QtWidgets.QMainWindow):
+class Application(QtWidgets.QMainWindow):
 
     exit_signal = QtCore.pyqtSignal(int)
 
@@ -11,6 +11,10 @@ class UserApplicationWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(QtWidgets.QWidget())
         self.centralWidget().setLayout(QtWidgets.QVBoxLayout())
         self.statusBar().showMessage('')
+        # Create space for user-defined widgets
+        self.user_widgets = QtWidgets.QWidget()
+        self.user_widgets.setLayout(QtWidgets.QGridLayout())
+        self.centralWidget().layout().addWidget(self.user_widgets)
         # Buttons widget
         self.exit_flag = 0
         self.exit_signal.connect(self.close_window)
@@ -22,6 +26,9 @@ class UserApplicationWindow(QtWidgets.QMainWindow):
         self.add_button("Cancel", 0)
         self.add_button("Quit", -1)
         self.centralWidget().layout().addWidget(self.buttons_widget)
+
+    def add_widget(self, *args):
+        self.user_widgets.layout().addWidget(*args)
 
     def add_button(self, name: str, exit_flag: int):
         self.buttons[name] = QtWidgets.QPushButton(name)

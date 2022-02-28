@@ -1,17 +1,17 @@
-from .userapp import UserApplicationWindow
+from .application import Application
 from ..widgets import DoubleThresholdWidget
 from ...video import Video
 
 
-class SetThresholdsApp(UserApplicationWindow):
+class SetThresholdsApp(Application):
     """Application for setting thresholds for tracking.
 
     Parameters
     ----------
-    tracker : Tracker
-        A Tracker object.
     videos : list
         List of paths to video files.
+    tracker : Tracker
+        A Tracker object.
     """
 
     def __init__(self, videos, tracker, *args, **kwargs):

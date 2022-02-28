@@ -29,7 +29,10 @@ def find_contours(image, threshold, n=-1, invert=False):
     else:
         ret, threshed = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY)
     # find contours
-    img, contours, hierarchy = cv2.findContours(threshed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    try:
+        img, contours, hierarchy = cv2.findContours(threshed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    except ValueError:
+        contours, hierarchy = cv2.findContours(threshed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # sort in descending size order
     contours = sorted(contours, key=lambda contour: cv2.contourArea(contour), reverse=True)
     if n > -1:
